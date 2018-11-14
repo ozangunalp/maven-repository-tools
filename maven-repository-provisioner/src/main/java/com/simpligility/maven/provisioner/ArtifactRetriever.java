@@ -213,13 +213,9 @@ public class ArtifactRetriever
       }
       for ( Artifact artifact : artifacts )
       {
-        String extension = artifact.getExtension();
-        if ( MavenConstants.packagingUsesJar( extension ) )
-        {
           Gav gav = new Gav( artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-              artifact.getExtension() );
-          getJar( gav );
-        }
+                  artifact.getExtension() );
+          getArtifact( gav, null, artifact.getClassifier() );
       }
     }
 
