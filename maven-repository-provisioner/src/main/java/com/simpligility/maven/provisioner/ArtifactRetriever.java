@@ -5,10 +5,7 @@
 package com.simpligility.maven.provisioner;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -21,18 +18,10 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
-import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.resolution.*;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
-import org.eclipse.aether.util.graph.selector.AndDependencySelector;
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
-import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+import org.eclipse.aether.util.graph.selector.*;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +46,7 @@ public class ArtifactRetriever
 
     private File repositoryPath;
 
-    private RemoteRepository sourceRepository;
+    private List<RemoteRepository> sourceRepositories = new ArrayList<RemoteRepository>();
     
     private final TreeSet<String> successfulRetrievals = new TreeSet<String>();
 
@@ -76,21 +65,24 @@ public class ArtifactRetriever
         session = RepositoryHandler.getRepositorySystemSession( system, repositoryPath );
     }
 
-    public void retrieve( List<String> artifactCoordinates, String sourceUrl, String username, 
+    public void retrieve( List<String> artifactCoordinates, List<String> sourceUrls, String username,
                          String password, boolean includeSources,
                          boolean includeJavadoc, boolean includeProvidedScope,
                          boolean includeTestScope, boolean includeRuntimeScope )
     {
-        RemoteRepository.Builder builder = new RemoteRepository.Builder( "central", "default", sourceUrl );
-        builder.setProxy( ProxyHelper.getProxy( sourceUrl ) );
-        
-        Authentication auth = new AuthenticationBuilder()
-            .addUsername( username )
-            .addPassword( password )
-            .build();
-        builder.setAuthentication( auth );
+        for ( String sourceUrl : sourceUrls ) {
 
-        sourceRepository = builder.build();
+            RemoteRepository.Builder builder = new RemoteRepository.Builder( sourceUrl, "default", sourceUrl );
+            builder.setProxy(ProxyHelper.getProxy(sourceUrl));
+
+            Authentication auth = new AuthenticationBuilder()
+                    .addUsername(username)
+                    .addPassword(password)
+                    .build();
+            builder.setAuthentication(auth);
+
+            sourceRepositories.add( builder.build() );
+        }
 
         getArtifactResults( artifactCoordinates, includeProvidedScope, includeTestScope, includeRuntimeScope );
 
@@ -156,7 +148,7 @@ public class ArtifactRetriever
         {
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot( new Dependency( artifact, JavaScopes.COMPILE ) );
-            collectRequest.addRepository( sourceRepository );
+            collectRequest.setRepositories(sourceRepositories);
 
             DependencyRequest dependencyRequest = new DependencyRequest( collectRequest, depFilter );
 
@@ -298,7 +290,7 @@ public class ArtifactRetriever
         // avoid download if we got it locally already? or not bother and just get it again? 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact( artifact );
-        artifactRequest.addRepository( sourceRepository );
+        artifactRequest.setRepositories(sourceRepositories);
 
         try
         {

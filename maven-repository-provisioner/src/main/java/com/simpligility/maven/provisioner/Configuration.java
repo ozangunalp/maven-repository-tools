@@ -5,8 +5,7 @@
 package com.simpligility.maven.provisioner;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import com.beust.jcommander.Parameter;
 
@@ -19,7 +18,7 @@ public class Configuration
                 description = 
                 "URL for the source repository from which artifacts are resolved, "
               + "example for a Nexus install is http://localhost:8081/content/groups/public" )
-    private String sourceUrl = "https://repo1.maven.org/maven2";
+    private List<String> sourceUrls = new ArrayList<String>(Arrays.asList("https://repo1.maven.org/maven2"));
 
     @Parameter( names = { "-t", "-targetUrl" }, 
                 description = "Folder or URL for the target repository e.g. dist-repo or "
@@ -82,9 +81,9 @@ public class Configuration
             + "deployments of a second execution are logged.", arity = 1  )
     private Boolean verifyOnly = false;
 
-    public void setSourceUrl( String sourceUrl )
+    public void setSourceUrls( List<String> sourceUrls )
     {
-        this.sourceUrl = sourceUrl;
+        this.sourceUrls = sourceUrls;
     }
 
     public void setTargetUrl( String targetUrl )
@@ -157,9 +156,9 @@ public class Configuration
         return help;
     }
 
-    public String getSourceUrl()
+    public List<String> getSourceUrls()
     {
-        return sourceUrl;
+        return sourceUrls;
     }
 
     public String getTargetUrl()
@@ -265,7 +264,7 @@ public class Configuration
     {
       StringBuilder builder = new StringBuilder();
       builder.append( "\nProvisioning artifacts: " + this.getArtifactCoordinate() + "\n" )
-        .append( "Source: " + getSourceUrl() + "\n" )
+        .append( "Sources: " + getSourceUrls() + "\n" )
         .append( "Target: " + getTargetUrl() + "\n" )
         .append( "Username: " + getUsername() + "\n" );
       if ( this.getPassword() != null ) 
