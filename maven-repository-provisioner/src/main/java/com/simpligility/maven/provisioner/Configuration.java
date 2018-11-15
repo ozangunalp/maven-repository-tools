@@ -5,7 +5,9 @@
 package com.simpligility.maven.provisioner;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
@@ -18,7 +20,7 @@ public class Configuration
                 description = 
                 "URL for the source repository from which artifacts are resolved, "
               + "example for a Nexus install is http://localhost:8081/content/groups/public" )
-    private List<String> sourceUrls = new ArrayList<String>(Arrays.asList("https://repo1.maven.org/maven2"));
+    private List<String> sourceUrls = new ArrayList<String>( Arrays.asList( "https://repo1.maven.org/maven2" ) );
 
     @Parameter( names = { "-t", "-targetUrl" }, 
                 description = "Folder or URL for the target repository e.g. dist-repo or "
@@ -30,7 +32,7 @@ public class Configuration
                 description = "GroupId/ArtifactId/Version (GAV) coordinates of the desired artifacts using the "
                     + "syntax (values in [] are optional): "
                     + "g:a[:extension][:classifier]:v|g:a[:extension][:classifier]:v "
-                    + " e.g. org.apache.commons:commons-lang3:3.3.2|com.google.inject:guice:jar:no_aop:3.0", 
+                    + " e.g. org.apache.commons:commons-lang3:3.3.2|com.google.inject:guice:jar:no_aop:3.0",
                 required = false )
     private String artifactCoordinate;
 
@@ -80,6 +82,21 @@ public class Configuration
         description = "Verify which artifacts would be deployed only, deployment is skipped and  potential "
             + "deployments of a second execution are logged.", arity = 1  )
     private Boolean verifyOnly = false;
+
+    @Parameter( names = { "-d", "-dependencies"},
+            description = "Resolve and download dependencies of the given artifact.", arity = 1
+    )
+    private Boolean dependencies = true;
+
+    public Boolean getDependencies()
+    {
+        return dependencies;
+    }
+
+    public void setDependencies( Boolean dependencies )
+    {
+        this.dependencies = dependencies;
+    }
 
     public void setSourceUrls( List<String> sourceUrls )
     {
@@ -278,6 +295,7 @@ public class Configuration
         .append( "IncludeRuntimeScope: " + getIncludeRuntimeScope() + "\n" )
         .append( "Check target: " + getCheckTarget() + "\n" )
         .append( "Verify only: " + getVerifyOnly() + "\n" )
+        .append( "Dependencies: " + getDependencies() + "\n" )
         .append( "Local cache or source repository directory: " + getCacheDirectory() + "\n\n" );
       return builder.toString();
     }

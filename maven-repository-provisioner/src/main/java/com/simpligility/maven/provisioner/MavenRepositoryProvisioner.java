@@ -121,7 +121,7 @@ public class MavenRepositoryProvisioner
         retriever = new ArtifactRetriever( cacheDirectory );
         retriever.retrieve( config.getArtifactCoordinates(), config.getSourceUrls(),
             config.getSourceUsername(), config.getSourcePassword(),
-            config.getIncludeSources(), config.getIncludeJavadoc(),
+            config.getDependencies(), config.getIncludeSources(), config.getIncludeJavadoc(),
             config.getIncludeProvidedScope(), config.getIncludeTestScope(), config.getIncludeRuntimeScope() );
 
         logger.info( "Artifact retrieval completed." );
